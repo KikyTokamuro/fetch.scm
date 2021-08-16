@@ -1,4 +1,4 @@
-#!/usr/bin/guile -s
+#!/usr/bin/guile
 !#
 
 (use-modules (ice-9 format)
@@ -33,7 +33,7 @@
   (let* ((min (round (/ (modulo uptime 3600) 60)))
 	 (hour (modulo (round (/ uptime 3600)) 24))
 	 (day (round (/ uptime 86400))))
-    (format #f "~a days ~a:~a" day hour min)))
+    (format #f "~a days ~2,'0d:~2,'0d" day hour min)))
 
 (define (get-uptime)
   (pretty-uptime (get-uptime-seconds)))
