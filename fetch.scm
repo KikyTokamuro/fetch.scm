@@ -28,6 +28,21 @@
 	     (ice-9 regex)
 	     (ice-9 popen))
 
+(define (run-cmd cmd)
+  "Run command and return output"
+  (let* ((port (open-input-pipe cmd))
+	 (str  (read-line port)))
+    (close-pipe port)
+    str))
+
+(define* (split-path #:optional (path (getenv "PATH")) (separator #\:))
+  "Split path string"
+  (string-tokenize path (char-set-complement (char-set separator))))
+
+(define (which program)
+  "Return program path or #f"
+  (search-path (split-path) program))
+
 (define (get-kernel)
   "Return Kernel version"
   (format #f "~a ~a"
@@ -54,12 +69,12 @@
   "Return current shell"
   (passwd:shell (get-pwd)))
 
-(define (get-uptime-seconds)
+(define (get-proc-uptime)
   "Return uptime in seconds"
   (inexact->exact
    (round (with-input-from-file "/proc/uptime" read))))
 
-(define (pretty-uptime uptime)
+(define (pretty-seconds uptime)
   "Return pretty time from seconds"
   (let* ((min (round (/ (modulo uptime 3600) 60)))
 	 (hour (modulo (round (/ uptime 3600)) 24))
@@ -68,27 +83,13 @@
 
 (define (get-uptime)
   "Return uptime"
-  (pretty-uptime (get-uptime-seconds)))
-
-(define* (split-path #:optional (path (getenv "PATH")) (separator #\:))
-  "Split path string"
-  (string-tokenize path (char-set-complement (char-set separator))))
-
-(define (which program)
-  "Return program path or #f"
-  (search-path (split-path) program))
+  (cond ((file-exists? "/proc/uptime") (pretty-seconds (get-proc-uptime)))
+	(else (run-cmd "uptime -p"))))
 
 (define (os-release-name path)
   "Return ID from os-release file"
   (let ((os (with-input-from-file path read-string)))
     (match:substring (string-match "PRETTY_NAME=\"([A-Za-z ]+)\"" os) 1)))
-
-(define (run-cmd cmd)
-  "Run command and return output"
-  (let* ((port (open-input-pipe cmd))
-	 (str  (read-line port)))
-    (close-pipe port)
-    str))
 
 (define (get-distro)
   "Return distro name"
