@@ -1,8 +1,10 @@
-# fetch.scm
-System information fetcher written in GNU Guile Scheme
+<h1 align="center"> fetch.scm </h1>
+<p align="center"> <img src="./img/screen.png"> </p>
+<h4 align="center"> System information fetcher written in GNU Guile Scheme </h4>
 
-## Screenshot
-![Screenshot](/img/screen.png)
+## Dependencies
+- GNU/Linux distro
+- `guile`
 
 ## Using
 ```sh
