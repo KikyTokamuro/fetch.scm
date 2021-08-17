@@ -84,7 +84,8 @@
 (define (get-uptime)
   "Return uptime"
   (cond ((file-exists? "/proc/uptime") (pretty-seconds (get-proc-uptime)))
-	(else (run-cmd "uptime -p"))))
+	((which "uptime") (run-cmd "uptime -p"))
+	(else "unknown")))
 
 (define (os-release-name path)
   "Return ID from os-release file"
@@ -96,7 +97,8 @@
   (cond ((file-exists? "/etc/os-release") (os-release-name "/etc/os-release"))
 	((file-exists? "/usr/lib/os-release") (os-release-name "/usr/lib/os-release"))
 	((which "lsb_release") (string-trim-both (run-cmd "lsb_release -sd") #\"))
-	(else (run-cmd "uname -o"))))
+	((which "uname") (run-cmd "uname -o"))
+	(else "unknown")))
 
 (define (green text)
   "Coloring text to green color"
