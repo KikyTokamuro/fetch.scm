@@ -1,5 +1,9 @@
-#!/usr/bin/guile
+#!/usr/bin/guile \
+-e main -s
 !#
+
+;; System information fetcher written in GNU Guile Scheme
+;; https://github.com/KikyTokamuro/fetch.scm
 
 ;; MIT License
 
@@ -26,7 +30,8 @@
 (use-modules (ice-9 format)
 	     (ice-9 rdelim)
 	     (ice-9 regex)
-	     (ice-9 popen))
+	     (ice-9 popen)
+	     (ice-9 getopt-long))
 
 (define (run-cmd cmd)
   "Run command and return output"
@@ -95,7 +100,6 @@
 (define (get-distro)
   "Return distro name"
   (cond ((file-exists? "/etc/os-release") (os-release-name "/etc/os-release"))
-	((file-exists? "/usr/lib/os-release") (os-release-name "/usr/lib/os-release"))
 	((which "lsb_release") (string-trim-both (run-cmd "lsb_release -sd") #\"))
 	((which "uname") (run-cmd "uname -o"))
 	(else "unknown")))
@@ -121,4 +125,21 @@
     (format #t "~18a -> ~a\n" (green "uptime") uptime)
     (format #t "~18a -> ~a\n" (green "shell") shell)))
 
-(print-info)
+(define help-message "fetch.scm - system information fetcher\n
+fetch.scm [options]
+  -v, --version    Display version
+  -h, --help       Display this help")
+
+(define version-message "fetch.scm v0.1.3")
+
+(define (main args)
+  (let* ((option-spec '((version (single-char #\v) (value #f))
+                        (help    (single-char #\h) (value #f))))
+         (options (getopt-long args option-spec))
+         (help-wanted (option-ref options 'help #f))
+         (version-wanted (option-ref options 'version #f)))
+    (if (or version-wanted help-wanted)
+        (begin
+          (if version-wanted (format #t "~a\n" version-message))
+          (if help-wanted (format #t "~a\n" help-message)))
+        (print-info))))
