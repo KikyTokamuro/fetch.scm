@@ -92,16 +92,26 @@
 	((which "uptime") (run-cmd "uptime -p"))
 	(else "unknown")))
 
-(define (os-release-name path)
+(define (os-release-name)
   "Return ID from os-release file"
-  (let ((os (with-input-from-file path read-string)))
+  (let ((os (with-input-from-file "/etc/os-release" read-string)))
     (match:substring (string-match "PRETTY_NAME=\"([A-Za-z ]+)\"" os) 1)))
 
 (define (get-distro)
   "Return distro name"
-  (cond ((file-exists? "/etc/os-release") (os-release-name "/etc/os-release"))
+  (cond ((file-exists? "/etc/os-release") (os-release-name))
 	((which "lsb_release") (string-trim-both (run-cmd "lsb_release -sd") #\"))
 	((which "uname") (run-cmd "uname -o"))
+	(else "unknown")))
+
+(define (cpuinfo-model)
+  "Return model from cpuinfo file"
+  (let ((cpuinfo (with-input-from-file "/proc/cpuinfo" read-string)))
+    (match:substring (string-match "model name\t: ([A-Za-z0-9 ()-@]+)\n" cpuinfo) 1)))
+
+(define (get-cpu)
+  "Return CPU"
+  (cond ((file-exists? "/proc/cpuinfo") (cpuinfo-model))
 	(else "unknown")))
 
 (define (green text)
@@ -110,20 +120,15 @@
 
 (define (print-info)
   "Print system info"
-  (let ((username (get-username))
-	(hostname (get-hostname))
-	(distro (get-distro))
-	(arch (get-arch))
-	(kernel (get-kernel))
-	(uptime (get-uptime))
-	(shell (get-shell)))
-    (format #t "~18a -> ~a\n" (green "username") username)
-    (format #t "~18a -> ~a\n" (green "hostname") hostname)
-    (format #t "~18a -> ~a\n" (green "distro") distro)
-    (format #t "~18a -> ~a\n" (green "arch") arch)
-    (format #t "~18a -> ~a\n" (green "kernel") kernel)
-    (format #t "~18a -> ~a\n" (green "uptime") uptime)
-    (format #t "~18a -> ~a\n" (green "shell") shell)))
+  (begin
+    (format #t "~18a -> ~a\n" (green "username") (get-username))
+    (format #t "~18a -> ~a\n" (green "hostname") (get-hostname))
+    (format #t "~18a -> ~a\n" (green "distro") (get-distro))
+    (format #t "~18a -> ~a\n" (green "arch") (get-arch))
+    (format #t "~18a -> ~a\n" (green "cpu") (get-cpu))
+    (format #t "~18a -> ~a\n" (green "kernel") (get-kernel))
+    (format #t "~18a -> ~a\n" (green "uptime") (get-uptime))
+    (format #t "~18a -> ~a\n" (green "shell") (get-shell))))
 
 (define help-message "fetch.scm - system information fetcher\n
 fetch.scm [options]
