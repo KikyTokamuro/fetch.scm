@@ -125,7 +125,8 @@
   "Return hardware model"
   (cond ((and (file-exists? "/sys/devices/virtual/dmi/id/product_name")
 	      (file-exists? "/sys/devices/virtual/dmi/id/product_version"))
-	 (hw-model))
+	 (let ((model (hw-model)))
+	   (if (string-contains model "To Be Filled By O.E.M.") "unknown" model)))
 	(else "unknown")))
 
 (define (green text)
