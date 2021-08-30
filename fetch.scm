@@ -7,7 +7,7 @@
 
 ;; MIT License
 
-;; Copyright (c) 2021 Kiky Tokamuro (Daniil Archangelsky)
+;; Copyright (c) 2021 Kiky Tokamuro (Daniil Archangelsky) <kiky.tokamuro@yandex.ru>
 
 ;; Permission is hereby granted, free of charge, to any person obtaining a copy
 ;; of this software and associated documentation files (the "Software"), to deal
@@ -114,6 +114,20 @@
   (cond ((file-exists? "/proc/cpuinfo") (cpuinfo-model))
 	(else "unknown")))
 
+(define (hw-model)
+  (let ((name (string-trim-right
+	       (with-input-from-file "/sys/devices/virtual/dmi/id/product_name" read-string)))
+	(version (string-trim-right
+		  (with-input-from-file "/sys/devices/virtual/dmi/id/product_version" read-string))))
+    (string-append name " " version)))
+
+(define (get-hw-model)
+  "Return hardware model"
+  (cond ((and (file-exists? "/sys/devices/virtual/dmi/id/product_name")
+	      (file-exists? "/sys/devices/virtual/dmi/id/product_version"))
+	 (hw-model))
+	(else "unknown")))
+
 (define (green text)
   "Coloring text to green color"
   (format #f "\x1b[32m~a\x1b[0m" text))
@@ -121,14 +135,15 @@
 (define (print-info)
   "Print system info"
   (begin
-    (format #t "~18a -> ~a\n" (green "username") (get-username))
-    (format #t "~18a -> ~a\n" (green "hostname") (get-hostname))
-    (format #t "~18a -> ~a\n" (green "distro") (get-distro))
-    (format #t "~18a -> ~a\n" (green "arch") (get-arch))
-    (format #t "~18a -> ~a\n" (green "cpu") (get-cpu))
-    (format #t "~18a -> ~a\n" (green "kernel") (get-kernel))
-    (format #t "~18a -> ~a\n" (green "uptime") (get-uptime))
-    (format #t "~18a -> ~a\n" (green "shell") (get-shell))))
+    (format #t "~18a ~a\n" (green "username") (get-username))
+    (format #t "~18a ~a\n" (green "hostname") (get-hostname))
+    (format #t "~18a ~a\n" (green "distro") (get-distro))
+    (format #t "~18a ~a\n" (green "arch") (get-arch))
+    (format #t "~18a ~a\n" (green "model") (get-hw-model))
+    (format #t "~18a ~a\n" (green "cpu") (get-cpu))
+    (format #t "~18a ~a\n" (green "kernel") (get-kernel))
+    (format #t "~18a ~a\n" (green "uptime") (get-uptime))
+    (format #t "~18a ~a\n" (green "shell") (get-shell))))
 
 (define help-message "fetch.scm - system information fetcher\n
 fetch.scm [options]
