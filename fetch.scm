@@ -150,7 +150,7 @@ fetch.scm [options]
   -v, --version    Display version
   -h, --help       Display this help")
 
-(define version-message "fetch.scm v0.1.3")
+(define version-message "fetch.scm v0.1.4")
 
 (define (main args)
   (let* ((option-spec '((version (single-char #\v) (value #f))
