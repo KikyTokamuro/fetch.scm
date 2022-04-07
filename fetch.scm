@@ -7,7 +7,7 @@
 
 ;; MIT License
 
-;; Copyright (c) 2021 Kiky Tokamuro (Daniil Archangelsky) <kiky.tokamuro@yandex.ru>
+;; Copyright (c) 2021-2022 Kiky Tokamuro (Daniil Archangelsky) <kiky.tokamuro@yandex.ru>
 
 ;; Permission is hereby granted, free of charge, to any person obtaining a copy
 ;; of this software and associated documentation files (the "Software"), to deal
@@ -95,7 +95,7 @@
 (define (os-release-name)
   "Return ID from os-release file"
   (let ((os (with-input-from-file "/etc/os-release" read-string)))
-    (match:substring (string-match "PRETTY_NAME=\"([A-Za-z ]+)\"" os) 1)))
+    (match:substring (string-match "PRETTY_NAME=\"([A-Za-z0-9. ]+)\"" os) 1)))
 
 (define (get-distro)
   "Return distro name"
@@ -151,7 +151,7 @@ fetch.scm [options]
   -v, --version    Display version
   -h, --help       Display this help")
 
-(define version-message "fetch.scm v0.1.4")
+(define version-message "fetch.scm v0.1.5")
 
 (define (main args)
   (let* ((option-spec '((version (single-char #\v) (value #f))
