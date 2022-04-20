@@ -1,5 +1,5 @@
 #!/usr/bin/guile \
--e main -s
+--no-auto-compile -e main -s
 !#
 
 ;; System information fetcher written in GNU Guile Scheme
