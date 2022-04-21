@@ -121,12 +121,20 @@
 		  (with-input-from-file "/sys/devices/virtual/dmi/id/product_version" read-string))))
     (string-append name " " version)))
 
-(define (get-hw-model)
+(define (get-model)
   "Return hardware model"
   (cond ((and (file-exists? "/sys/devices/virtual/dmi/id/product_name")
 	      (file-exists? "/sys/devices/virtual/dmi/id/product_version"))
 	 (let ((model (hw-model)))
 	   (if (string-contains model "To Be Filled By O.E.M.") "unknown" model)))
+	(else "unknown")))
+
+(define (get-desktop)
+  "Return desktop info"
+  (define xdg-current-desktop (getenv "XDG_CURRENT_DESKTOP"))
+  (define desktop-session (getenv "DESKTOP_SESSION"))
+  (cond (xdg-current-desktop (string-downcase xdg-current-desktop))
+	(desktop-session (string-downcase desktop-session))
 	(else "unknown")))
 
 (define (green text)
@@ -135,16 +143,11 @@
 
 (define (print-info)
   "Print system info"
-  (begin
-    (format #t "~18a ~a\n" (green "username") (get-username))
-    (format #t "~18a ~a\n" (green "hostname") (get-hostname))
-    (format #t "~18a ~a\n" (green "distro") (get-distro))
-    (format #t "~18a ~a\n" (green "arch") (get-arch))
-    (format #t "~18a ~a\n" (green "model") (get-hw-model))
-    (format #t "~18a ~a\n" (green "cpu") (get-cpu))
-    (format #t "~18a ~a\n" (green "kernel") (get-kernel))
-    (format #t "~18a ~a\n" (green "uptime") (get-uptime))
-    (format #t "~18a ~a\n" (green "shell") (get-shell))))
+  (for-each (lambda (x)
+	      (let ((info-element (eval (list (symbol-append 'get- x)) (interaction-environment))))
+		(if (not (string= info-element "unknown"))
+		    (format #t "~18a ~a\n" (green (symbol->string x)) info-element))))
+	    '(username hostname distro desktop arch model cpu kernel uptime shell)))
 
 (define help-message "fetch.scm - system information fetcher\n
 fetch.scm [options]
